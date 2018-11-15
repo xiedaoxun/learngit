@@ -1,4 +1,5 @@
 linux:
   1.安装git：sudo apt-get install git
   2.把当前目录变成git可管理的仓库：git init
-
+  3.添加文件，可以添加多个：git add [filename] 
+  4.提交文件，git commit -m "xxx"，-m:提交说明
