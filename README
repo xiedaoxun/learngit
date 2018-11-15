@@ -1,0 +1,4 @@
+linux:
+  1.安装git：sudo apt-get install git
+  2.把当前目录变成git可管理的仓库：git init
+
