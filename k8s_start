@@ -1,0 +1,66 @@
+启动k8s：
+1. 启动etcd
+   etcd -initial-advertise-peer-urls http://127.0.0.1:2380 -listen-peer-urls http://127.0.0.1:2380 -listen-client-urls http://127.0.0.1:2379,http://127.0.0.1:2379 -advertise-client-urls http://127.0.0.1:2379 &
+
+2. 创建key
+   openssl genrsa -out /etc/kubernetes/serviceaccount.key 2048
+
+3. 启动kube-apiserver
+   kube-apiserver --address=0.0.0.0  --service-account-key-file=/etc/kubernetes/serviceaccount.key --insecure-port=8080 --service-cluster-ip-range='10.10.10.1/24' --log-dir=/usr/local/kubernete_test/logs/kube --kubelet-port=10250 --v=0 --logtostderr=false --etcd-servers=http://127.0.0.1:2379 --allow-privileged=false &
+
+4. 启动kube-controller-manager
+   kube-controller-manager  --service-account-private-key-file=/etc/kubernetes/serviceaccount.key --v=0 --logtostderr=false --log-dir=/usr/local/kubernete_test/logs/kube --master=127.0.0.1:8080 &
+
+5. 启动kube-scheduler 
+   kube-scheduler  --master='127.0.0.1:8080' --v=0  --log-dir=/usr/local/kubernete_test/logs/kube &
+
+6. 由于之前胡乱安装导致kubectl命令默认与192.168.99.100通信（暂时未google解决，后面解决），故先修改kubectl命令默认动作
+    alias kubectl=" kubectl -s http://127.0.0.1:8080"
+
+7. 测试master节点是否正常启动
+   kubectl get componentstatuses
+
+8. 启动kube-proxy 
+    kube-proxy  --logtostderr=false --v=0 --master=http://127.0.0.1:8080 &
+
+9. 启动kubelet
+    kubelet  --logtostderr=false --v=0 --log-dir=/usr/local/kubernete_test/logs/kube  --hostname-override=127.0.0.1 --fail-swap-on=false &
+
+10.在Node上设置集群Context
+    kubectl config set-cluster test-cluster --server=http://127.0.0.1:8080
+    kubectl config set-context test-cluster --cluster=test-cluster
+    kubectl config use-context test-cluster 
+
+11.由于单机部署，需要开启允许master部署pod
+  允许master部署pod
+  kubectl taint nodes --all node-role.kubernetes.io/master-
+
+  禁止master部署pod
+  kubectl taint nodes centos-master-1 node-role.kubernetes.io/master=true:NoSchedule
+
+12.确认K8S是否启动成功
+  kubectl get nodes
+
+13.创建Nginx Pods
+   kubectl run nginx --image=nginx --port=80  --replicas=5
+   kubectl get pods
+   
+14.创建nginx-service.yaml 
+    apiVersion: v1
+	kind: Service
+	metadata:
+	  name: nginx
+	  labels:
+		app: nginx
+	spec:
+	  ports:
+	  - port: 80
+		targetPort: 9090
+	  selector:
+		name: nginx
+		
+15.根据Pods创建Service
+   kubectl create -f nginx-service.yaml或者kubectl apply -f nginx-service.yaml
+   kubectl get services
+
+部署参考：https://www.cnblogs.com/edisonxiang/p/6911994.html(源码编译部署)
