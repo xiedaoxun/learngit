@@ -63,4 +63,5 @@
    kubectl create -f nginx-service.yaml或者kubectl apply -f nginx-service.yaml
    kubectl get services
 
-部署参考：https://www.cnblogs.com/edisonxiang/p/6911994.html(源码编译部署)
+部署参考：https://www.cnblogs.com/edisonxiang/p/6911994.html
+          https://github.com/kubernetes/kubernetes(源码编译部署)
