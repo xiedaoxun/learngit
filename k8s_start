@@ -65,3 +65,26 @@
 
 部署参考：https://www.cnblogs.com/edisonxiang/p/6911994.html
           https://github.com/kubernetes/kubernetes(源码编译部署)
+
+命令：
+1. 查看各pod状态:kubectl get pod [--all-namespaces] [-o json|wide..]
+   kubelet是唯一没有以容器运行的组件，它是通过systemd运行，通过systemctl status kubelet.service查看
+2. 查看pod详细信息：kubectl descirbe pod pod-name
+3. 查看各节点状态: kubectl get nodes
+4. 部署应用：kubectl run deployment-name --image=image --replicas=num 或
+             kubectl apply -f file.yml(推荐)
+5. 查看应用状态:kubectl get deployment [deployment-name]
+6. 查看详细信息：kubectl describe deployment/pod/service/.. name
+7. 查看replicaset信息：kubectl get replicaset
+8. 查看replicaset详细信息：kubectl describe replicaset replicaset-name
+9. 删除deployment,replicaset,pod资源:kubectl delete deployment deployment-name 或者
+                                     kubectl delete -f file.yml
+10.若要scale up/down：修改yml文件中的副本数，再kubectl apply即可
+11.允许master部署pod:kubectl taint nodes --all node-role.kubernetes.io/master-
+   禁止master部署pod:kubectl taint nodes centos-master-1 node-role.kubernetes.io/master=true:NoSchedule
+12.添加label：kubectl label node node-name key=value
+13.删除lebel: kubectl label node node-name key-,删除lebel不会导致pod重新部署,除非重新apply
+14.查看节点label：kubectl get node --show-labels
+15.查看集群每个运行资源的配置和状态：kubectl edit deployment/daemonset xxx
+16.查看pod的标准输出:kubectl logs pod-name
+17.在apiserver中加入cronjob功能：修改apiserver的配置文件（/etc/kubernetes/manifests/kube-apiserver.yaml）,在启动参数中加上--runtime-config=batch/v2alpha1=true,然后重启kubelet(systemctl restart kubelet.service,因为kubelet会重启apiserver pod)，通过kubectl api-versions确认已经支持 batch/v2alpha1
